@@ -1,45 +1,91 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"&gt></html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"&gt>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .card {
+            max-width: 250px; /* smaller card width */
+        }
+        .card img {
+            object-fit: cover;
+            height: 120px; /* smaller image */
+        }
+        .card:hover {
+            transform: scale(1.02);
+            transition: 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .out-of-stock {
+            background-color: #ccc;
+            border-color: #ccc;
+            cursor: not-allowed;
+        }
+        .menu-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border: none;
+            background: transparent;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .menu-dropdown {
+            position: absolute;
+            top: 35px;
+            right: 10px;
+            z-index: 10;
+        }
+    </style>
 </head>
 <body>
 <div class="container mt-4">
-    <h2>User Dashboard</h2>
-    <a href="/user/cart" class="btn btn-warning float-end mb-3">🛒 View Cart</a><br/>
-    <div class="row">
-        <div class="col-md-4 mb-4" th:each="product : ${products}">
-            <div class="card">
-                <img th:src="@{'/images/' + ${product.imageName}}" class="card-img-top" width="100" height="80" >
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>User Dashboard</h2>
+        <a href="/user/cart" class="btn btn-warning">
+            🛒 View Cart
+        </a>
+    </div>
 
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${product.name}"></h5>
-                    <p class="card-text" th:text="${product.description}"></p>
-                    <p><strong>₹</strong> <span th:text="${product.price}"></span></p>
-                    <!--<a th:href="@{'/user/add-to-cart/' + ${product.id}}" class="btn btn-success w-100">Add to Cart</a> -->
+    <div class="row g-3">
+        <div class="col-auto mb-4" th:each="product : ${products}">
+            <div class="card position-relative h-100">
+                <!-- Menu button -->
+                <button class="menu-btn" onclick="toggleMenu(this)">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
 
+                <div class="menu-dropdown dropdown-menu">
+                    <a class="dropdown-item" th:href="@{'/user/view/' + ${product.id}}">View</a>
+                    <a class="dropdown-item" th:href="@{'/user/add-to-wishlist/' + ${product.id}}">Add to Wishlist</a>
+                    <a class="dropdown-item" th:href="@{'/user/report/' + ${product.id}}">Report</a>
+                </div>
 
+                <img th:src="@{'/images/' + ${product.imageName}}" class="card-img-top" alt="Product Image">
 
-                    <!-- Load reserved quantity from session map -->
+                <div class="card-body d-flex flex-column">
+                    <h6 class="card-title" th:text="${product.name}"></h6>
+                    <p class="card-text flex-grow-1" th:text="${product.description}"></p>
+                    <p class="fw-bold mb-2">₹ <span th:text="${product.price}"></span></p>
+
                     <th:block th:with="reservedMap=${session.reservedStock},
-reservedQty=${reservedMap != null and reservedMap[product.id] != null ? reservedMap[product.id] : 0},
-availableStock=${product.stock - reservedQty}">
+                        reservedQty=${reservedMap != null and reservedMap[product.id] != null ? reservedMap[product.id] : 0},
+                        availableStock=${product.stock - reservedQty}">
 
-                        <p class="card-text text-muted">
+                        <p class="text-muted mb-2">
                             Available: <span th:text="${availableStock}"></span>
                         </p>
 
-                        <!--If available stock > 0 -->
                         <a th:if="${availableStock > 0}"
                            th:href="@{'/user/add-to-cart/' + ${product.id}}"
-                           class="btn btn-primary btn-sm">
+                           class="btn btn-primary btn-sm w-100 mt-auto">
                             Add to Cart
                         </a>
 
-                        <!-- If out of stock -->
-                        <button th:if="${availableStock <= 0}" class="btn btn-secondary btn-sm" disabled>
+                        <button th:if="${availableStock <= 0}" class="btn out-of-stock btn-sm w-100 mt-auto" disabled>
                             Out of Stock
                         </button>
                     </th:block>
@@ -48,5 +94,27 @@ availableStock=${product.stock - reservedQty}">
         </div>
     </div>
 </div>
+
+<script>
+    // Toggle menu dropdown
+    function toggleMenu(btn) {
+        const dropdown = btn.nextElementSibling;
+        const isShown = dropdown.classList.contains('show');
+        // Close all dropdowns first
+        document.querySelectorAll('.menu-dropdown').forEach(d => d.classList.remove('show'));
+        if(!isShown) dropdown.classList.add('show');
+    }
+
+    // Close menu if click outside menu button or dropdown
+    document.addEventListener('click', function(e){
+        if(!e.target.closest('.menu-btn') && !e.target.closest('.menu-dropdown')) {
+            document.querySelectorAll('.menu-dropdown').forEach(d => d.classList.remove('show'));
+        }
+    });
+</script>
+
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

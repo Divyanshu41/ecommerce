@@ -13,7 +13,7 @@
 
         public void sendOrderEmail(String to, String subject, String body) {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("mrdivyanshu154@gmail.com");
+            message.setFrom("lnctdivyanshu@gmail.com");
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);
